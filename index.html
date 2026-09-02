@@ -1296,8 +1296,8 @@
                     </svg> </div>
                   <div>
                     <h4 class="font-semibold text-foreground mb-1">Visit Us</h4>
-                    <p class="text-sm text-muted-foreground">Maktha Mahaboobpet, HMT Swarnapuri Colony Main Road,
-  Hyderabad, Telangana, India</p>
+                    <p class="text-sm text-muted-foreground">MAGNET de'unisex salon, Plot No 12, HMT Swarnapuri Colony,
+                      Miyapur, Hyderabad, Telangana, India</p>
                   </div>
                 </div>
                 <div class="flex items-start gap-4">
@@ -1488,7 +1488,7 @@
         </div>
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-7xl mx-auto">
           <div class="rounded-2xl overflow-hidden border border-border shadow-xl h-[500px]"> <iframe
-  src="https://www.google.com/maps?q=Maktha+Mahaboobpet,+HMT+Swarnapuri+Colony+Main+Road,+Hyderabad,+Telangana,+India&output=embed"
+  src="https://www.google.com/maps?q=MAGNET+de%27unisex+salon,+Plot+No+12,+HMT+Swarnapuri+Colony,+Miyapur,+Hyderabad,+Telangana,+India&output=embed"
   width="100%"
   height="100%"
   style="border:0;"
@@ -1511,10 +1511,10 @@
                   </svg> </div>
                 <div>
                   <h3 class="text-xl font-bold text-foreground mb-2">Our Address</h3>
-                  <p class="text-muted-foreground leading-relaxed">Maktha Mahaboobpet, HMT Swarnapuri Colony Main Road,
-                    Hyderabad, Telangana, India</p>
+                  <p class="text-muted-foreground leading-relaxed">MAGNET de'unisex salon, Plot No 12, HMT Swarnapuri
+                    Colony, Miyapur, Hyderabad, Telangana, India</p>
                 </div>
-              </div> <a href="https://www.google.com/maps/place/Maktha+Mahaboobpet,+HMT+Swarnapuri+Colony+Main+Road,+Hyderabad,+Telangana,+India" target="_blank"
+              </div> <a href="https://maps.app.goo.gl/xYTfCDZPN69ybazQ8?g_st=aw" target="_blank"
                 rel="noopener noreferrer"
                 class="w-full bg-primary text-primary-foreground py-3 rounded-lg hover:bg-accent hover:text-accent-foreground transition-all font-semibold text-center flex items-center justify-center gap-2">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
@@ -1676,8 +1676,8 @@
                   d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0">
                 </path>
                 <circle cx="12" cy="10" r="3"></circle>
-              </svg> <span class="text-sm text-muted-foreground">Maktha Mahaboobpet, HMT Swarnapuri Colony Main Road,
-  Hyderabad, Telangana, India</span> </li>
+              </svg> <span class="text-sm text-muted-foreground">MAGNET de'unisex salon, Plot No 12, HMT Swarnapuri
+  Colony, Miyapur, Hyderabad, Telangana, India</span> </li>
             <li> <a href="tel:+91 6302776479" class="flex items-center gap-3 hover:text-primary transition-colors"> <svg
                   xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
                   stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
@@ -1740,9 +1740,48 @@
     const form = document.querySelector("form");
     const successMessage = document.getElementById("b12-form-done-ba5be18d-64ac-451d-85b3-9fc5896af076");
     const errorMessage = document.getElementById("b12-form-error-ba5be18d-64ac-451d-85b3-9fc5896af076");
+    const preferredDateInput = document.getElementById("preferred_date");
+    const preferredTimeInput = document.getElementById("preferred_time");
+
+    const padDatePart = (value) => String(value).padStart(2, "0");
+    const getTodayValue = () => {
+      const now = new Date();
+      return `${now.getFullYear()}-${padDatePart(now.getMonth() + 1)}-${padDatePart(now.getDate())}`;
+    };
+    const getCurrentTimeValue = () => {
+      const now = new Date();
+      return `${padDatePart(now.getHours())}:${padDatePart(now.getMinutes())}`;
+    };
+    const updateDateTimeLimits = () => {
+      const today = getTodayValue();
+
+      if (preferredDateInput) {
+        preferredDateInput.min = today;
+      }
+
+      if (!preferredDateInput || !preferredTimeInput) {
+        return;
+      }
+
+      if (preferredDateInput.value === today) {
+        const currentTime = getCurrentTimeValue();
+        preferredTimeInput.min = currentTime;
+
+        if (preferredTimeInput.value && preferredTimeInput.value < currentTime) {
+          preferredTimeInput.value = "";
+        }
+      } else {
+        preferredTimeInput.removeAttribute("min");
+      }
+    };
+
+    updateDateTimeLimits();
+    preferredDateInput?.addEventListener("change", updateDateTimeLimits);
+    preferredTimeInput?.addEventListener("focus", updateDateTimeLimits);
 
     form?.addEventListener("submit", async function (event) {
       event.preventDefault();
+      updateDateTimeLimits();
 
       const submitButton = form.querySelector('button[type="submit"]');
       const data = new FormData(form);
@@ -1756,6 +1795,16 @@
         additional_notes: String(data.get("additional_notes") || "").trim(),
       };
 
+      const now = new Date();
+      const selectedDateTime = new Date(`${payload.preferred_date}T${payload.preferred_time}`);
+
+      if (selectedDateTime <= now) {
+        preferredTimeInput?.setCustomValidity("Please choose a future appointment time.");
+        preferredTimeInput?.reportValidity();
+        return;
+      }
+
+      preferredTimeInput?.setCustomValidity("");
       successMessage.hidden = true;
       errorMessage.hidden = true;
       submitButton.disabled = true;
